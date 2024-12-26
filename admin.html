@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片管理后台</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- 添加登录验证 -->
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+    <style>
+        .admin-panel {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .upload-form {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .photo-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .photo-item {
+            position: relative;
+        }
+        .photo-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginForm" style="display: none;">
+        <h2>登录</h2>
+        <input type="password" id="password" placeholder="请输入密码">
+        <button onclick="login()">登录</button>
+    </div>
+
+    <div id="adminPanel" class="admin-panel" style="display: none;">
+        <h1>照片管理后台</h1>
+        
+        <div class="upload-form">
+            <h2>上传新照片</h2>
+            <form id="uploadForm" onsubmit="handleUpload(event)">
+                <div>
+                    <label for="year">年份：</label>
+                    <select id="year" name="year" required>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="photo">选择照片：</label>
+                    <input type="file" id="photo" name="photo" accept="image/*" required multiple>
+                </div>
+                <button type="submit">上传</button>
+            </form>
+        </div>
+
+        <div class="photo-management">
+            <h2>照片管理</h2>
+            <div id="yearTabs">
+                <button onclick="showYear(2025)" class="active">2025</button>
+                <button onclick="showYear(2026)">2026</button>
+                <button onclick="showYear(2027)">2027</button>
+            </div>
+            <div id="photoList" class="photo-list">
+                <!-- 照片将通过 JavaScript 动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 登录验证
+        function login() {
+            const password = document.getElementById('password').value;
+            if (password === 'wanglingfans2024') {
+                Cookies.set('admin', 'true', { expires: 7 });
+                showAdmin();
+            } else {
+                alert('密码错误！');
+            }
+        }
+
+        // 检查登录状态
+        function checkLogin() {
+            if (Cookies.get('admin')) {
+                showAdmin();
+            } else {
+                document.getElementById('loginForm').style.display = 'block';
+            }
+        }
+
+        // 显示管理界面
+        function showAdmin() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+        }
+
+        // 上传照片
+        async function uploadPhoto(file, year) {
+            const formData = new FormData();
+            formData.append('photo', file);
+            formData.append('year', year);
+
+            try {
+                const response = await fetch('/api/photos', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    loadPhotos(year);
+                }
+            } catch (error) {
+                console.error('上传失败:', error);
+            }
+        }
+
+        // 加载照片
+        async function loadPhotos(year) {
+            try {
+                const response = await fetch(`/api/photos/${year}`);
+                const photos = await response.json();
+                displayPhotos(photos, year);
+            } catch (error) {
+                console.error('加载失败:', error);
+            }
+        }
+
+        // 处理表单提交
+        async function handleUpload(event) {
+            event.preventDefault();
+            const year = document.getElementById('year').value;
+            const files = document.getElementById('photo').files;
+            
+            for (let file of files) {
+                await uploadPhoto(file, year);
+            }
+        }
+
+        // 显示照片列表
+        function displayPhotos(photos, year) {
+            const photoList = document.getElementById('photoList');
+            photoList.innerHTML = '';
+            
+            photos.forEach(photo => {
+                const div = document.createElement('div');
+                div.className = 'photo-item';
+                div.innerHTML = `
+                    <img src="${photo.url}" alt="照片">
+                    <button class="delete-btn" onclick="deletePhoto('${photo._id}')">删除</button>
+                `;
+                photoList.appendChild(div);
+            });
+        }
+
+        // 删除照片
+        async function deletePhoto(id) {
+            try {
+                const response = await fetch(`/api/photos/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const year = document.getElementById('year').value;
+                    loadPhotos(year);
+                }
+            } catch (error) {
+                console.error('删除失败:', error);
+            }
+        }
+
+        // 初始化
+        checkLogin();
+    </script>
+</body>
+</html> 

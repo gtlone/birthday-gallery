@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大粉丝王玲的生日计时</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>大粉丝王玲的生日计时</h1>
+        <nav>
+            <ul>
+                <li><a href="#birthday">生日信息</a></li>
+                <li><a href="#wishes">生日祝福</a></li>
+                <li><a href="#gallery">照片集</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="birthday">
+            <h2>生日信息</h2>
+            <p>王玲的农历生日是2003年十二月初二</p>
+            <p>今年的生日是2024年1月12日</p>
+            <p>明年的生日是2025年1月1日</p>
+            <p>距离下一次生日还有：<span id="countdown">计算中...</span></p>
+        </section>
+
+        <section id="wishes">
+            <h2>生日祝福</h2>
+            <p>愿你每一天都如阳光般温暖，如月光般温柔</p>
+            <p>愿你的生活充满欢笑，程似锦</p>
+        </section>
+
+        <section id="gallery">
+            <h2>美好瞬间</h2>
+            <div id="photo-gallery">
+                <!-- 照片将通过 JavaScript 动态加载 -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 大粉丝王玲的生日计时</p>
+    </footer>
+
+    <script>
+        function updateCountdown() {
+            const now = new Date();
+            
+            // 当前年份的生日日期（需要每年通过 rtool.cn 验证更新）
+            let nextBirthday = new Date(2024, 0, 12); // 2024年1月12日
+            
+            // 如果今年的生日已经过了，就计算到明年的生日（需要每年通过 rtool.cn 验证更新）
+            if (now > nextBirthday) {
+                nextBirthday = new Date(2025, 0, 1); // 2025年1月1日
+            }
+            
+            // 计算时间差
+            const diff = nextBirthday - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // 更新显示
+            document.getElementById('countdown').innerHTML = 
+                `${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
+        }
+
+        // 立即执行一次
+        updateCountdown();
+        // 每秒更新一次
+        setInterval(updateCountdown, 1000);
+    </script>
+    <script src="gallery.js"></script>
+    <script>
+        // 页面加载完成后加载照片
+        document.addEventListener('DOMContentLoaded', loadGallery);
+    </script>
+</body>
+</html> 
